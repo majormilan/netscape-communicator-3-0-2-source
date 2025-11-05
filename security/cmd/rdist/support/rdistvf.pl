@@ -15,11 +15,14 @@ use warnings;
 my $tmp = "/tmp/rdistfilter.$$";
 open my $outf, "|sort >$tmp" or die "Can not open tmp file.\n";
 
+our $Host;        # preserved package/global variable so it survives loop iterations
+my @Fields;       # temporary fields parsed for each line
+
 while (<>) {
     chomp;
 
     # Remove any garbage we might find
-    s/[\\000-\\007\\016-\\037]//g;
+    s/[\000-\007\016-\037]//g;
 
     #
     # The point of the below code is to try to extract and save the
@@ -30,27 +33,27 @@ while (<>) {
     # host name.
     #
     if ((/updating of /) || (/updating host /)) {
-        my @Fields = split;
-        my $Host = $Fields[2];
-        $Host =~ s/\..*//;    # Strip domain name
+        @Fields = split;
+        $Host = $Fields[2];
+        $Host =~ s/\..*//;  	# Strip domain name
     } elsif (/:/) {
-        my @Fields = split;
-        my $Host = $Fields[0];
-        $Host =~ s/://;
-        $Host =~ s/\..*//;    # Strip domain name
+        @Fields = split;
+        $Host = $Fields[0];
+        $Host =~ s/:/;  
+        $Host =~ s/\..*//;  	# Strip domain name
 
         my $tmpname = $Host . ":";
-        printf {$outf} "%-12s", $tmpname;
+        printf $outf "%-12s", $tmpname;
         for (my $i = 1; $i <= $#Fields; $i++) {
-            printf {$outf} " %s", $Fields[$i];
+            printf $outf " %s", $Fields[$i];
         }
-        printf {$outf} "\n";
+        printf $outf "\n";
     } elsif ($_) {
         if (defined $Host) {
             my $tmpname = $Host . ":";
-            printf {$outf} "%-12s", $tmpname;
+            printf $outf "%-12s", $tmpname;
         }
-        printf {$outf} "%s\n", $_;
+        printf $outf "%s\n", $_;
     }
 }
 
@@ -61,7 +64,7 @@ my $ll = "";
 my $lc = 0;
 
 while (<$inf>) {
-    my ($current) = split(/\t| /);
+    ($current) = split(/\t| /);
     if ($last && ($last ne $current)) {
         printf "\n";
     }
@@ -72,9 +75,9 @@ while (<$inf>) {
     } else {
         printf $_;
         if ($lc > 1) {
-            my $cs = sprintf(" (x%d)", $lc);
+            $cs = sprintf(" (x%d)", $lc);
         } else {
-            my $cs = "";
+            $cs = "";
         }
         printf "\n"; # printf "%s\n", $cs;
         $lc = 0;
