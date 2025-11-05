@@ -3,9 +3,9 @@
 # $Id: rdistvf.pl,v 1.1 1996/01/31 23:30:33 dkarlton Exp $
 #
 # rdistvfilter - Verbose filter of rdist messages.  Takes the output from
-#	 rdist and outputs a much nicer, though verbose, form.
+#		 rdist and outputs a much nicer, though verbose, form.
 #
-# [mcooper] 5/9/88
+# [mcooper]	5/9/88
 #
 
 use v5.36;
@@ -35,51 +35,51 @@ while (<>) {
     if ((/updating of /) || (/updating host /)) {
         @Fields = split;
         $Host = $Fields[2];
-        $Host =~ s/\..*//;  	# Strip domain name
+        $Host =~ s/\..*//; 	# Strip domain name
     } elsif (/:/) {
         @Fields = split;
         $Host = $Fields[0];
-        $Host =~ s/:/;  
-        $Host =~ s/\..*//;  	# Strip domain name
+        $Host =~ s/://;
+        $Host =~ s/\..*//; 	# Strip domain name
 
         my $tmpname = $Host . ":";
-        printf $outf "%-12s", $tmpname;
+        printf {$outf} "%-12s", $tmpname;
         for (my $i = 1; $i <= $#Fields; $i++) {
-            printf $outf " %s", $Fields[$i];
+            printf {$outf} " %s", $Fields[$i];
         }
-        printf $outf "\n";
+        printf {$outf} "\n";
     } elsif ($_) {
         if (defined $Host) {
             my $tmpname = $Host . ":";
-            printf $outf "%-12s", $tmpname;
+            printf {$outf} "%-12s", $tmpname;
         }
-        printf $outf "%s\n", $_;
+        printf {$outf} "%s\n", $_;
     }
 }
 
 close $outf;
-open my $inf, "$tmp" or die "Cannot open tmp file.\n";
+open my $inf, $tmp or die "Cannot open tmp file.\n";
 my $last = "";
 my $ll = "";
 my $lc = 0;
 
 while (<$inf>) {
-    ($current) = split(/\t| /);
+    my ($current) = split(/\t| /);
     if ($last && ($last ne $current)) {
         printf "\n";
     }
     $last = $current;
-    $_ =~ s/\n//;
+    s/\n//;
     if ($ll eq $_) {
         $lc++;
     } else {
-        printf $_;
+        print $_;
         if ($lc > 1) {
-            $cs = sprintf(" (x%d)", $lc);
+            my $cs = sprintf(" (x%d)", $lc);
         } else {
-            $cs = "";
+            my $cs = "";
         }
-        printf "\n"; # printf "%s\n", $cs;
+        print "\n"; # printf "%s\n", $cs;
         $lc = 0;
         $ll = $_;
     }

@@ -1,10 +1,10 @@
 #! /usr/local/bin/perl
 use v5.36;
 use strict;
-warnings;
+use warnings;
 
 open my $pa_tags, '<', 'pa_tags.h' or die "Can't open pa_tags.h: $!";
-open my $hash, "|/usr/local/bin/gperf -T -t -l -Npa_LookupTag -p -k1,\$,2,3 > gperf.out.$$" or die "Can't run gperf: $!";
+open my $hash, "|/usr/local/bin/gperf -T -t -l -Npa_LookupTag -p -k1,\\$,2,3 > gperf.out.$$" or die "Can't run gperf: $!";
 print $hash "struct pa_TagTable { char *name; int id; };\n%%\n\n";
 
 open my $rmap, '>', 'pa_hash.rmap' or die "Can't open pa_hash.rmap: $!";
@@ -15,7 +15,7 @@ while (my $line = <$pa_tags>) {
   if ($line =~ /^#[ \t]*define[ \t]*([A-Z_][A-Z0-9_]+)[ \t]*(.*)/) {
     my $var = $1;
     my $val = $2;
-    $val =~ s/\"//g;
+    $val =~ s/"//g;
     my $pre = $var;
     $pre =~ s/_.*//;
     my $post = $var;
@@ -42,12 +42,12 @@ close $pa_tags;
 close $hash;
 close $rmap;
 open my $gperf_out, '<', "gperf.out.$$" or die "Can't open gperf output: $!";
-unlink("gperf.out.$$);
+unlink("gperf.out.$$");
 open my $template, '<', "pa_hash.template" or die "Can't open template: $!";
 
 my %template;
 while (my $tline = <$template>) {
-  if ($tline =~ /^@begin/) {
+  if ($tline =~ /^\@begin/) {
     my ($name, $start, $end) =
       $tline =~ m#\@begin[ \t]*([A-Za-z0-9_]+)[ \t]*/([^/]*)/[ \t]*/([^/]*)/#;
     my $line;
@@ -59,14 +59,14 @@ while (my $tline = <$template>) {
         $template{$name} .= $line;
       } until ($line =~ /$end/ || eof($gperf_out));
     }
-  } elsif ($tline =~ /^@include/) {
+  } elsif ($tline =~ /^\@include/) {
     my ($name) = $tline =~ /\@include[ \t]*(.*)$/;
     print $template{$name};
-  } elsif ($tline =~ /^@sub/) {
+  } elsif ($tline =~ /^\@sub/) {
     my ($name, $old, $new) =
       $tline =~ m#\@sub[ \t]*([A-Za-z0-9_]*)[ \t]/([^/]*)/([^/]*)/#;
     $template{$name} =~ s/$old/$new/g;
-  } elsif ($tline =~ /^@/) {
+  } elsif ($tline =~ /^\@/) {
     ;
   } else {
     print $tline;

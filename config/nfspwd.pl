@@ -4,7 +4,7 @@ require "fastcwd.pl";
 
 use v5.36;
 use strict;
-warnings;
+use warnings;
 
 my ($user, $rest, $host);
 
