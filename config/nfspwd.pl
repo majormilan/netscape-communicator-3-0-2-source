@@ -4,18 +4,17 @@ require "fastcwd.pl";
 
 use v5.36;
 use strict;
-use warnings;
+warnings;
 
-my $cwd = fastcwd();
-local $_ = $cwd;
+my ($user, $rest, $host);
+
+local $_ = fastcwd();
 if (m@^/[uh]/@o || s@^/tmp_mnt/@/@o) {
-    print("$_
-");
-} elsif ((my ($user, $rest) = m@^/usr/people/(\\\\w+)/(.*)@o)
+    print("$_\n");
+} elsif ((($user, $rest) = m@^/usr/people/(\w+)/(.*)@o)
       && readlink("/u/$user") eq "/usr/people/$user") {
     print("/u/$user/$rest\n");
 } else {
-    chomp(my $host = `hostname`);
-    print("/h/$host$_
-");
+    chop($host = `hostname`);
+    print("/h/$host$_\n");
 }
