@@ -3,19 +3,23 @@
 # $Id: rdistvf.pl,v 1.1 1996/01/31 23:30:33 dkarlton Exp $
 #
 # rdistvfilter - Verbose filter of rdist messages.  Takes the output from
-#		 rdist and outputs a much nicer, though verbose, form.
+#	 rdist and outputs a much nicer, though verbose, form.
 #
-# [mcooper]	5/9/88
+# [mcooper] 5/9/88
 #
 
-$tmp = "/tmp/rdistfilter.$$";
-open(OUTF, "|sort >$tmp") || die "Can not open tmp file.\n";
+use v5.36;
+use strict;
+use warnings;
+
+my $tmp = "/tmp/rdistfilter.$$";
+open my $outf, "|sort >$tmp" or die "Can not open tmp file.\n";
 
 while (<>) {
-    chop;
+    chomp;
 
     # Remove any garbage we might find
-    s/[\000-\007\016-\037]//g;
+    s/[\\000-\\007\\016-\\037]//g;
 
     #
     # The point of the below code is to try to extract and save the
@@ -26,57 +30,58 @@ while (<>) {
     # host name.
     #
     if ((/updating of /) || (/updating host /)) {
-	@Fields = split;
-	$Host = @Fields[2];
-	$Host =~ s/\..*//; 	# Strip domain name
+        my @Fields = split;
+        my $Host = $Fields[2];
+        $Host =~ s/\..*//;    # Strip domain name
     } elsif (/:/) {
-	@Fields = split;
-	$Host = @Fields[0];
-	$Host =~ s/://;
-	$Host =~ s/\..*//; 	# Strip domain name
+        my @Fields = split;
+        my $Host = $Fields[0];
+        $Host =~ s/://;
+        $Host =~ s/\..*//;    # Strip domain name
 
-	$tmpname = $Host . ":";
-	printf OUTF "%-12s", $tmpname;
-	for ($i = 1; $i <= $#Fields; $i++) {
-	    printf OUTF " %s", $Fields[$i];
-	}
-	printf OUTF "\n";
+        my $tmpname = $Host . ":";
+        printf {$outf} "%-12s", $tmpname;
+        for (my $i = 1; $i <= $#Fields; $i++) {
+            printf {$outf} " %s", $Fields[$i];
+        }
+        printf {$outf} "\n";
     } elsif ($_) {
-	if ($Host) {
-	    $tmpname = $Host . ":";
-	    printf OUTF "%-12s", $tmpname;
-	}
-	printf OUTF "%s\n", $_;
+        if (defined $Host) {
+            my $tmpname = $Host . ":";
+            printf {$outf} "%-12s", $tmpname;
+        }
+        printf {$outf} "%s\n", $_;
     }
 }
 
-close(OUTF);
-open(OUTF, "$tmp") || die "Cannot open tmp file.\n";
-$last = "";
-$ll = "";
-$lc = 0;
+close $outf;
+open my $inf, "$tmp" or die "Cannot open tmp file.\n";
+my $last = "";
+my $ll = "";
+my $lc = 0;
 
-while (<OUTF>) {
-    ($current) = split(/\t| /);
+while (<$inf>) {
+    my ($current) = split(/\t| /);
     if ($last && ($last ne $current)) {
-	printf "\n";
+        printf "\n";
     }
     $last = $current;
     $_ =~ s/\n//;
     if ($ll eq $_) {
-	$lc++;
+        $lc++;
     } else {
-	printf $_;
-	if ($lc > 1) {
-	    $cs = sprintf(" (x%d)", $lc);
-	} else {
-	    $cs = "";
-	}
-	printf "\n"; # printf "%s\n", $cs;
-	$lc = 0;
-	$cs = "";
-	$ll = $_;
+        printf $_;
+        if ($lc > 1) {
+            my $cs = sprintf(" (x%d)", $lc);
+        } else {
+            my $cs = "";
+        }
+        printf "\n"; # printf "%s\n", $cs;
+        $lc = 0;
+        $ll = $_;
     }
 }
 
 unlink $tmp;
+
+exit 0;

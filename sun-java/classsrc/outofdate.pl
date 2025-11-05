@@ -1,13 +1,11 @@
 #!/usr/local/bin/perl
 
-#Input: [-d dir] foo1.java foo2.java
-#Compares with: foo1.class foo2.class (if -d specified, checks in 'dir', 
-#  otherwise assumes .class files in same directory as .java files)
-#Returns: list of input arguments which are newer than corresponding class
-#files (non-existant class files are considered to be real old :-)
+use v5.36;
+use strict;
+use warnings;
 
-
-if ($ARGV[0] eq '-d') {
+my $classdir;
+if (defined $ARGV[0] && $ARGV[0] eq '-d') {
     $classdir = $ARGV[1];
     $classdir .= "/";
     shift;
@@ -16,15 +14,16 @@ if ($ARGV[0] eq '-d') {
     $classdir = "./";
 }
 
-foreach $filename (@ARGV) {
-    $classfilename = $classdir;
+foreach my $filename (@ARGV) {
+    my $classfilename = $classdir;
     $classfilename .= $filename;
     $classfilename =~ s/.java$/.class/;
-    ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,
-     $ctime,$blksize,$blocks) = stat($filename);
-    ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$classmtime,
-     $ctime,$blksize,$blocks) = stat($classfilename);
-    if ($mtime > $classmtime) {
+    my @statf = stat($filename);
+    my $mtime = $statf[9];
+    my @statc = stat($classfilename);
+    my $classmtime = $statc[9];
+    $classmtime = 0 unless defined $classmtime;
+    if (defined $mtime && $mtime > $classmtime) {
         print $filename, " ";
     }
 }

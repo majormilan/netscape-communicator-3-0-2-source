@@ -1,69 +1,75 @@
 #! /usr/local/bin/perl
-open(PA_TAGS, "<pa_tags.h");
-open(HASH, "|/usr/local/bin/gperf -T -t -l -Npa_LookupTag -p -k1,\$,2,3 > gperf.out.$$");
-print HASH 'struct pa_TagTable { char *name; int id; };
-%%
-';
+use v5.36;
+use strict;
+use warnings;
 
-open(RMAP, ">pa_hash.rmap");
-$nextval = 0;
+open my $pa_tags, '<', 'pa_tags.h' or die "Can't open pa_tags.h: $!";
+open my $hash, "|/usr/local/bin/gperf -T -t -l -Npa_LookupTag -p -k1,\\$,2,3 > gperf.out.$$" or die "Can't run gperf: $!";
+print $hash 'struct pa_TagTable { char *name; int id; };\n%%\n';
 
-while (<PA_TAGS>) {
-  if (/^#[ 	]*define[ 	]([A-Z_][A-Z0-9_]+)[ 	]*(.*)/) {
-    $var = $1;
-    $val = $2;
+open my $rmap, '>', 'pa_hash.rmap' or die "Can't open pa_hash.rmap: $!";
+my $nextval = 0;
+
+my %strings;
+while (my $line = <$pa_tags>) {
+  if ($line =~ /^#[ 	]*define[ 	]*([A-Z_][A-Z0-9_]+)[ 	]*(.*)/) {
+    my $var = $1;
+    my $val = $2;
     $val =~ s/"//g;
-    $pre = $var;
+    my $pre = $var;
     $pre =~ s/_.*//;
-    $post = $var;
+    my $post = $var;
     $post =~ s/$pre//;
     $post =~ s/_//;
     if ($pre eq "PT") {
       $strings{$post} = $val;
     } elsif ($pre eq "P") {
       if ($strings{$post} ne "") {
-        print HASH $strings{$post} . ", $var\n";
+        print $hash $strings{$post} . ", $var\n";
       }
       if ($var ne "P_UNKNOWN" && $var ne "P_MAX") {
-	while ($nextval < $val) {
-	  print RMAP "/* $nextval */\t\"\",\n";
-	  $nextval++;
-	}
-        print RMAP "/*$val*/\t\"$strings{$post}\",\n";
-	$nextval = $val + 1;
+        while ($nextval < $val) {
+          print $rmap "/* $nextval */\t\"\",\n";
+          $nextval++;
+        }
+        print $rmap "/*$val*/\t\"$strings{$post}\",\n";
+        $nextval = $val + 1;
       }
     }
   }
 }
-close(PA_TAGS);
-close(HASH);
-close(RMAP);
-open(C, "<gperf.out.$$");
-unlink("gperf.out.$$");
-open(T, "<pa_hash.template");
+close $pa_tags;
+close $hash;
+close $rmap;
+open my $gperf_out, '<', "gperf.out.$$" or die "Can't open gperf output: $!";
+unlink("gperf.out.$$);
+open my $template, '<', "pa_hash.template" or die "Can't open template: $!";
 
-while (<T>) {
-  if (/^\@begin/) {
-    ($name, $start, $end) =
-      m#\@begin[ 	]*([A-Za-z0-9_]+)[ 	]*/([^/]*)/[ 	]*/([^/]*)/#;
-    $line = <C> until (eof(C) || $line =~ /$start/);
-    if ($line =~ /$start/) {
+my %template;
+while (my $tline = <$template>) {
+  if ($tline =~ /^\@begin/) {
+    my ($name, $start, $end) =
+      $tline =~ m#\@begin[ \t]*([A-Za-z0-9_]+)[ \t]*/([^/]*)/[ \t]*/([^/]*)/#;
+    my $line = <$gperf_out> until (eof($gperf_out) || $line =~ /$start/);
+    if (defined $line && $line =~ /$start/) {
       $template{$name} .= $line;
       do {
-	$line = <C>;
-	$template{$name} .= $line;
-      } until ($line =~ /$end/ || eof(C));
+        $line = <$gperf_out>;
+        $template{$name} .= $line;
+      } until ($line =~ /$end/ || eof($gperf_out));
     }
-  } elsif (/^\@include/) {
-    ($name) = /\@include[ 	]*(.*)$/;
+  } elsif ($tline =~ /^\@include/) {
+    my ($name) = $tline =~ /\@include[ \t]*(.*)$/;
     print $template{$name};
-  } elsif (/^\@sub/) {
-    ($name, $old, $new) =
-      m#\@sub[ 	]*([A-Za-z0-9_]*)[ 	]/([^/]*)/([^/]*)/#;
+  } elsif ($tline =~ /^\@sub/) {
+    my ($name, $old, $new) =
+      $tline =~ m#\@sub[ \t]*([A-Za-z0-9_]*)[ \t]/([^/]*)/([^/]*)/#;
     $template{$name} =~ s/$old/$new/g;
-  } elsif (/^\@/) {
+  } elsif ($tline =~ /^\@/) {
     ;
   } else {
-    print $_;
+    print $tline;
   }
 }
+close $gperf_out;
+close $template;

@@ -8,21 +8,18 @@
 # Based on suggestions by J Greely.  code by Steve Romig.
 # 
 
-# Basic idea: for each line of rdsit output (assumed to be of form
-# "host: message", record the list of hosts that it was seen on.  Sort
-# the messages in order of increasing number of hosts, and print a
-# report that lists each set of hosts and the messages that appeared for
-# those hosts, running from least number of hosts to the greatest.
+use v5.36;
+use strict;
+use warnings;
+
 #
-# In other words, if rdist was run on bird, tree, fish and fruit, the
-# output might look something like this:
+# Format definitions rely on package variables; declare them with 'our'
 #
-# fish:
-#     installing /export/local/bin/less
-#
-# bird tree fruit:
-#     updating /export/local/bin/less
-#
+our ($user, $dirs, $hosts, $host_string, $host_data);
+our ($last, $ll, $lc);
+our (%seen, %host_number, %host_text);
+our $lineno;
+our ($a, $b);    # for sort comparator
 
 #
 # Format to use for printing the start of the report.
@@ -31,10 +28,10 @@ format STDOUT =
 user:        @<<<<<<<<<<<<<<<<<<<<<<<<<
              $user
 directories: ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	     $dirs
+             $dirs
 ~~           ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	     $dirs
-hosts:	     ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+             $dirs
+hosts:     ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
              $hosts
 ~~           ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
              $hosts
@@ -84,18 +81,19 @@ while (<>) {
     #
     # if it's a host: line, save it...
     #
-    if (/^(\S+):[ \t]+(.*)$/) {
-	$data = $2;
-	if (defined($seen{$data})) {
-	    $seen{$data} .= " $1";
-	} else {
-	    $seen{$data} = $1;
-	}
+    if (/^(\\S+):[ \	]+(.*)$/) {
+        my $host = $1;
+        my $data = $2;
+        if (defined $seen{$data}) {
+            $seen{$data} .= " $host";
+        } else {
+            $seen{$data} = $host;
+        }
     #
     # otherwise print it at the top of the report
     #
     } else {
-	print "$_\n";
+        print "$_.\n";
     }
 }
 
@@ -104,8 +102,8 @@ while (<>) {
 # appeared on (sorted in alphabetical order) and update the 
 # report text for that list of hosts.
 #
-foreach $line (keys %seen) {
-    @host_list = sort split(/ /, $seen{$line});
+foreach my $line (keys %seen) {
+    my @host_list = sort split(/ /, $seen{$line});
     $host_string = join(' ', @host_list);
     $seen{$line} = $host_string;
 
@@ -120,8 +118,8 @@ foreach $line (keys %seen) {
     $host_text{$host_string} .= "    " . $line . "\n";
 }
 
-$: = " \n";	# Break characters
-$~ = BODY;	# Format to use
+$: = " \n";
+$~ = 'BODY';
 
 #
 # sort the host lists by increasing number, and print the 
@@ -140,4 +138,3 @@ foreach $host_string (sort increasing keys %host_number) {
 }
 
 exit 0;
-
