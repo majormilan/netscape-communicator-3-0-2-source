@@ -166,7 +166,7 @@ endif
 # Can't use sed because of its 4000-char line length limit, so resort to perl
 
 .DEFAULT:
-	@$(PERL) $(DEPTH)/config/fix_deps.pl "$(DEPENDENCIES)" "$<" "$(OBJDIR)"
+	@$(PERL) $(DEPTH)/config/fix_deps.pl "$(DEPENDENCIES)" "$<"
 
 
 -include $(MY_RULES)
