@@ -65,13 +65,9 @@ $(OBJDIR)/%.o: %.c
 	@$(MAKE_OBJDIR)
 	$(CC) -o $@ -c $(CFLAGS) $*.c
 
-$(OBJDIR)/%.o: %.s
-	@$(MAKE_OBJDIR)
-	$(AS) -o $@ $(ASFLAGS) -c $*.s
-
 $(OBJDIR)/%.o: %.S
 	@$(MAKE_OBJDIR)
-	$(AS) -o $@ $(ASFLAGS) -c $*.S
+	$(AS) $(ASFLAGS) $(CPPFLAGS) $< -o $@
 
 $(OBJDIR)/%: %.cpp
 	@$(MAKE_OBJDIR)

@@ -29,7 +29,11 @@ CFLAGS		= -DXP_UNIX $(OPTIMIZER) $(OS_CFLAGS) $(DEFINES) $(INCLUDES) \
 NOMD_CFLAGS	= -DXP_UNIX $(OPTIMIZER) $(NOMD_OS_CFLAGS) $(DEFINES) \
 		  $(INCLUDES) $(XCFLAGS)
 AS		= $(CC)
-ASFLAGS		= $(CFLAGS)
+ASFLAGS = -c
+CPPFLAGS = -I../../dist/Linux6.12_DBG.OBJ/include/nspr \
+           -D__ASSEMBLER__ \
+           -I./asm_includes
+
 
 CCF		= $(CC) $(CFLAGS)
 
