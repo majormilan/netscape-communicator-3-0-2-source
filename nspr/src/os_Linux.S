@@ -7,7 +7,9 @@
 #include <prtypes.h>
 #include <prmem.h>
 #include <prthread.h>
-#include <prpdce.h>
+
+#define PRWord prword_t
+
 #include <sys/syscall.h>
 #include <unistd.h>
 
@@ -50,49 +52,44 @@ _MD_HomeGCRegisters(PRThread *t, int isCurrent, int *np)
  * Modern Linux removed socketcall() in 2012 — these are the real fixes
  * ----------------------------------------------------------------- */
 
-long __OS_SOCKET(int domain, int type, int protocol)
+long _OS_SOCKET(int domain, int type, int protocol)
 {
     return syscall(SYS_socket, domain, type, protocol);
 }
 
-long __OS_CONNECT(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
+long _OS_CONNECT(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
 {
     return syscall(SYS_connect, sockfd, addr, addrlen);
 }
 
-long __OS_SEND(int sockfd, const void *buf, size_t len, int flags)
+long _OS_SEND(int sockfd, const void *buf, size_t len, int flags)
 {
     return syscall(SYS_sendto, sockfd, buf, len, flags, NULL, 0);
 }
 
-long __OS_RECV(int sockfd, void *buf, size_t len, int flags)
+long _OS_RECV(int sockfd, void *buf, size_t len, int flags)
 {
     return syscall(SYS_recvfrom, sockfd, buf, len, flags, NULL, NULL);
 }
 
-long __OS_SELECT(int nfds, fd_set *readfds, fd_set *writefds,
+long _OS_SELECT(int nfds, fd_set *readfds, fd_set *writefds,
                  fd_set *exceptfds, struct timeval *timeout)
 {
     return syscall(SYS_select, nfds, readfds, writefds, exceptfds, timeout);
 }
 
 /* Export symbols exactly as the old .S file did */
-asm(".globl __OS_SOCKET\n"
-    "__OS_SOCKET = __OS_SOCKET");
-asm(".globl __OS_CONNECT\n"
-    "__OS_CONNECT = __OS_CONNECT");
-asm(".globl __OS_SEND\n"
-    "__OS_SEND = __OS_SEND");
-asm(".globl __OS_RECV\n"
-    "__OS_RECV = __OS_RECV");
-asm(".globl __OS_SELECT\n"
-    "__OS_SELECT = __OS_SELECT");
+asm(".globl _OS_SOCKET");
+asm(".globl _OS_CONNECT");
+asm(".globl _OS_SEND");
+asm(".globl _OS_RECV");
+asm(".globl _OS_SELECT");
 
 /* -----------------------------------------------------------------
  * No-op stubs for ancient APIs
  * ----------------------------------------------------------------- */
-void _MD_SET_PRIORITY(_PRCPU *cpu, PRThread *thread, PRUint32 pri) { }
+void _MD_SET_PRIORITY(void *cpu, PRThread *thread, unsigned int pri) { }
 void _MD_INIT_CPUS() { }
-void _MD_INIT_RUNNING_CPU(_PRCPU *cpu) { }
+void _MD_INIT_RUNNING_CPU(void *cpu) { }
 void _MD_EarlyInit() { }
 void _MD_LateInit() { }

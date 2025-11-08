@@ -22,17 +22,14 @@ LIBAWT		= $(DIST)/lib/libawt.a
 LIBMMEDIA	= $(DIST)/lib/libmmedia.a
 PURELIBNSPR	= $(DIST)/lib/purenspr.a
 
-INCLUDES	= -I$(DIST)/include -I$(DEPTH)/include -I$(DIST)/include/nspr
+INCLUDES	= -I$(DIST)/include -I$(DEPTH)/include -I$(DIST)/include/nspr -I$(DEPTH)/nspr/include
 CFLAGS		= -DXP_UNIX $(OPTIMIZER) $(OS_CFLAGS) $(DEFINES) $(INCLUDES) \
 		  $(XCFLAGS)
 # For purify
 NOMD_CFLAGS	= -DXP_UNIX $(OPTIMIZER) $(NOMD_OS_CFLAGS) $(DEFINES) \
 		  $(INCLUDES) $(XCFLAGS)
 AS		= $(CC)
-ASFLAGS = -c
-CPPFLAGS = -I../../dist/Linux6.12_DBG.OBJ/include/nspr \
-           -D__ASSEMBLER__ \
-           -I./asm_includes
+ASFLAGS 	= $(CFLAGS)
 
 
 CCF		= $(CC) $(CFLAGS)

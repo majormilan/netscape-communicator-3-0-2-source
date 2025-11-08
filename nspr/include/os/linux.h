@@ -111,9 +111,9 @@
     (_thread)->asyncArg0 = o; \
     (_thread)->asyncArg1 = a; \
     (_thread)->context[0].__jmpbuf[JB_BP] = 0; \
-    (_thread)->context[0].__jmpbuf[JB_SP] = (unsigned char*) \
+    (_thread)->context[0].__jmpbuf[JB_SP] = (long int)(unsigned char*) \
         ((_thread)->stack->stackTop - 64); \
-    (_thread)->context[0].__jmpbuf[JB_PC] = HopToadNoArgs; \
+    (_thread)->context[0].__jmpbuf[JB_PC] = (long int)HopToadNoArgs; \
 }
 
 #define _MD_SWITCH_CONTEXT(_thread) \

@@ -37,15 +37,6 @@ void _MD_InitOS(int when)
     }
 } 
 
-prword_t *_MD_HomeGCRegisters(PRThread *t, int isCurrent, int *np)
-{
-    if (isCurrent) {
-	(void) sigsetjmp(CONTEXT(t),1);
-    }
-    *np = sizeof(CONTEXT(t)) / sizeof(prword_t);
-    return (prword_t*) CONTEXT(t);
-}
-
 /************************************************************************/
 
 /*

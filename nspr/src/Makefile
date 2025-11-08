@@ -93,7 +93,7 @@ ifeq ($(OS_ARCH),AIX)
 TARGETS += $(OBJDIR)/aixwrap.o
 endif
 
-INCLUDES += -I../include
+CFLAGS += -I$(NSPRDEPTH)/include
 
 include $(NSPRDEPTH)/config/rules.mk
 
@@ -114,4 +114,4 @@ export:: $(TARGETS)
 install:: export
 
 clobber::
-	rm -f $(PURE_OBJS)
+	rm -f $(PURE_OBJS) $(OBJDIR)/md_$(OS_ARCH).o

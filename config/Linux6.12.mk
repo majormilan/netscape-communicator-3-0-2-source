@@ -14,7 +14,7 @@ OS_OBJTYPE		=
 NEED_XMOS		= 1
 
 # fixme OS_CFLAGS	= -m486 -ansi -Wall -pipe -MDupdate $(DEPENDENCIES)
-OS_CFLAGS 		= -ansi -fno-builtin -Wall -Wno-implicit-int -Wno-return-type -pipe
+OS_CFLAGS 		= -fno-builtin -Wall -Wno-implicit-int -Wno-return-type -pipe
 OS_CFLAGS 		+= -Wno-implicit-function-declaration
 CXXFLAGS 		+= -fpermissive -Wno-narrowing -Wno-deprecated
 OS_CFLAGS		+= -DLINUX -DLINUX1_2 -D_POSIX_SOURCE -D_DEFAULT_SOURCE -DHAVE_STRERROR -DSW_THREADS
