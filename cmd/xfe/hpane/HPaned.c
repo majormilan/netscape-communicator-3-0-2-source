@@ -2226,7 +2226,7 @@ ChangeManaged(
 
       /* Realize child now so it won't get realized and put on the 
          top of the stack, above the sash, when it is realized later */
-      if (XtIsRealized(pw) && XtIsManaged(*childP))
+      if (XtIsRealized((Widget)pw) && XtIsManaged(*childP))
           XtRealizeWidget(*childP);
 
       /* KEEP SOME RECORD OF DESIRED HEIGHT */
@@ -2466,7 +2466,7 @@ SetValues(
 	oldpw->paned_window.margin_height != newpw->paned_window.margin_height ||
        (requestpw->paned_window.refiguremode &&
 				 !(oldpw->paned_window.refiguremode))) &&
-       XtIsRealized(newpw)) {
+       XtIsRealized((Widget)newpw)) {
        Dimension needed;
 
       if ((needed = NeedsAdjusting(newpw)) != 0) {

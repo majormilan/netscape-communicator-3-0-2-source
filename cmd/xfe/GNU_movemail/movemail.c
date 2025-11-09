@@ -74,9 +74,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define WAITTYPE int
 #endif /* !WAITTYPE */
 
-#ifndef WIFEXITED
 #include <sys/wait.h>
-#endif /* !WIFEXITED */
 
 #ifndef WRETCODE
 #define WRETCODE(w) WEXITSTATUS(w)
@@ -828,17 +826,4 @@ mbx_delimit_end (mbf)
 
 #endif /* MAIL_USE_POP */
 
-#ifndef HAVE_STRERROR
-char *
-strerror (errnum)
-     int errnum;
-{
-  /*  extern char *sys_errlist[];*/
-  extern int sys_nerr;
 
-  if (errnum >= 0 && errnum < sys_nerr)
-    return sys_errlist[errnum];
-  return (char *) "Unknown error";
-}
-
-#endif /* ! HAVE_STRERROR */

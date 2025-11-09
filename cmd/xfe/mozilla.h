@@ -18,7 +18,8 @@
 #include <time.h>
 
 #if defined(__linux)
-extern int putenv (const char *);
+/* extern putenv (const char *); */
+
 #endif
 
 #endif /* __xfe_mozilla_h_ */
