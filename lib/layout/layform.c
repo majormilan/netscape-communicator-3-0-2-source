@@ -3124,8 +3124,7 @@ lo_ProcessKeygenTag(MWContext *context, lo_DocState *state, PA_Tag *tag)
 	 * as select/options or as radio buttons or if there is only one
 	 * choice then we don't show anything at all, etc.
 	 */
-	kstr = lo_FetchParamValue(context, tag, PARAM_TYPE);
-	pstr = lo_FetchParamValue(context, tag, PARAM_PQG);
+	        kstr = (char *)lo_FetchParamValue(context, tag, PARAM_TYPE);	        pstr = (char *)lo_FetchParamValue(context, tag, PARAM_PQG);
 #ifdef HAVE_SECURITY /* added by jwz */
 	keylist = SECNAV_GetKeyChoiceList(kstr, pstr);
 #else

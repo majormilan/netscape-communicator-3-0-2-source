@@ -591,7 +591,7 @@ NET_FindAddress (const char *host_ptr,
 											    remapped_host_port ? 
 												    remapped_host_port : 
 													    host_port, 
-												&hoststruct_pointer, 
+												(void **)&hoststruct_pointer, 
 												(int)sock);
 			if(status == MK_WAITING_FOR_LOOKUP)
 			  {
