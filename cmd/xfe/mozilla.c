@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8 -*-
    mozilla.c --- initialization for the X front end.
-   Copyright © 1998 Netscape Communications Corporation, all rights reserved.
+   Copyright ï¿½ 1998 Netscape Communications Corporation, all rights reserved.
    Created: Jamie Zawinski <jwz@netscape.com>, 22-Jun-94.
  */
 
@@ -2595,18 +2595,12 @@ fe_ensure_config_dir_exists (Widget toplevel)
       if (mkdir (dir, 0700) < 0)
 	{
 	  fmt = XP_GetString( XFE_UNABLE_TO_CREATE_DIRECTORY );
-#ifdef DEBUG_jwz  /* this is the modern way */
           char *es = 0;
           if (errno >= 0)
             es = strerror (errno);
           if (!es || !*es)
             es = XP_GetString( XFE_UNKNOWN_ERROR );
 	  PR_snprintf (buf, sizeof (buf), fmt, XP_AppName, dir, es);
-#else /* !DEBUG_jwz */
-	  PR_snprintf (buf, sizeof (buf), fmt, XP_AppName, dir,
-		   ((errno >= 0 && errno < sys_nerr)
-		    ? sys_errlist [errno] : XP_GetString( XFE_UNKNOWN_ERROR )));
-#endif /* !DEBUG_jwz */
 	  fe_Alert_2 (toplevel, buf);
 	  free (dir);
 	  return FALSE;

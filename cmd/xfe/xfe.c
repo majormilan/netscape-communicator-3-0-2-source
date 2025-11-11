@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8 -*-
    xfe.c --- other junk specific to the X front end.
-   Copyright © 1996 Netscape Communications Corporation, all rights reserved.
+   Copyright ï¿½ 1996 Netscape Communications Corporation, all rights reserved.
    Created: Jamie Zawinski <jwz@netscape.com>, 22-Jun-94.
  */
 
@@ -3647,7 +3647,13 @@ fe_ResourceString(Widget widget, char* res_name, char* res_class)
     XtGetSubresources(XtParent(widget), (XtPointer)&result, XtName(widget),
 		      XtClassName(widget), &resource, 1, NULL, 0);
     
-    return result;
+    if (result) {
+        char *text;
+        XmStringGetLtoR(result, XmFONTLIST_DEFAULT_TAG, &text);
+        XmStringFree(result);
+        return text;
+    }
+    return NULL;
 }
 
 /*

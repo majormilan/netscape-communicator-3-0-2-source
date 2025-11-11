@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8 -*-
    movemail.c --- move mail between folders with file locking
-   Copyright © 1995 Netscape Communications Corporation, all rights reserved.
+   Copyright ï¿½ 1995 Netscape Communications Corporation, all rights reserved.
    Created: Spencer Murray <spence@netscape.com>, 15-Sep-95.
  */
 
@@ -60,17 +60,9 @@ fe_movemail_perror(MWContext *context, const char *message)
   XP_ASSERT(context);
   if (!context) return;
 
-#ifdef DEBUG_jwz  /* this is the modern way */
   if (e >= 0)
     es = strerror (e);
   if (!es || !*es)
-#else /* !DEBUG_jwz */
-  if ((unsigned)e < (unsigned)sys_nerr)
-    {
-      es = sys_errlist [e];
-    }
-  else
-#endif /* !DEBUG_jwz */
     {
       PR_snprintf (buf2, sizeof (buf2), XP_GetString( XFE_UNKNOWN_ERROR_CODE ),
 		errno);

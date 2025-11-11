@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8 -*-
    mkicons.c --- converting transparent GIFs to embeddable XImage data.
-   Copyright © 1995 Netscape Communications Corporation, all rights reserved.
+   Copyright ï¿½ 1995 Netscape Communications Corporation, all rights reserved.
    Created: Jamie Zawinski <jwz@netscape.com>, 17-Aug-95.
    (Danger.  Here be monsters.)
  */
@@ -142,6 +142,8 @@ image_size (MWContext *context, IL_ImageStatus message,
 {
   if (il_image->bits)
     free (il_image->bits);
+  il_image->bits = NULL;
+
   if (!did_size)
     {
       fprintf (stdout, " %d, %d,\n", il_image->width, il_image->height);
@@ -150,13 +152,18 @@ image_size (MWContext *context, IL_ImageStatus message,
     }
 
   il_image->bits = malloc (il_image->widthBytes * il_image->height);
-  memset (il_image->bits, ~0, (il_image->widthBytes * il_image->height));
+  // memset (il_image->bits, ~0, (il_image->widthBytes * il_image->height));
   if (!il_image->mask && il_image->transparent)
     {
       int size = il_image->maskWidthBytes * il_image->height;
       il_image->mask = malloc (size);
-      memset (il_image->mask, ~0, size);
+      // memset (il_image->mask, ~0, size);
     }
+  else if (il_image->mask) { /* Added else if to handle existing mask */
+    free(il_image->mask);
+    il_image->mask = NULL;
+  }
+
 
   return 0;
 }
@@ -331,10 +338,15 @@ image_data (MWContext *context, IL_ImageStatus message, IL_Image *il_image,
     fprintf (stdout, "\"\n};\n\n");
   column = 0;
 
-  if (il_image->bits) free (il_image->bits);
-  il_image->bits = 0;
-  if (il_image->mask) free (il_image->mask);
-  il_image->mask = 0;
+  if (il_image->bits) {
+    free (il_image->bits);
+    il_image->bits = NULL;
+  }
+  if (il_image->mask) {
+    free (il_image->mask);
+    il_image->mask = NULL;
+  }
+
 }
 
 

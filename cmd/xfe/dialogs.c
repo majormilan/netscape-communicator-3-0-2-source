@@ -1,6 +1,6 @@
 /* -*- Mode:C; tab-width: 8 -*-
    dialogs.c --- General UI functions used elsewhere.
-   Copyright © 1996 Netscape Communications Corporation, all rights reserved.
+   Copyright ï¿½ 1996 Netscape Communications Corporation, all rights reserved.
    Created: Jamie Zawinski <jwz@netscape.com>, 23-Jun-94.
  */
 
@@ -353,17 +353,9 @@ fe_perror_2 (Widget parent, const char *message)
   char buf2 [512];
   char *b = buf1;
 
-#ifdef DEBUG_jwz  /* this is the modern way */
   if (e >= 0)
     es = strerror (e);
   if (!es || !*es)
-#else /* !DEBUG_jwz */
-  if (e >= 0 && e < sys_nerr)
-    {
-      es = sys_errlist [e];
-    }
-  else
-#endif /* !DEBUG_jwz */
     {
       PR_snprintf (buf2, sizeof (buf2), XP_GetString( XFE_UNKNOWN_ERROR_CODE ),
 		errno);
@@ -2714,7 +2706,7 @@ fe_ReadFileName_2 (	MWContext* context,
 #endif
 
   {
-    String dirmask = 0;
+    XmString dirmask = 0;
     XmString xms;
     char *s, *tail;
     char buf [2048];

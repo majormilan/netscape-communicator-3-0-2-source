@@ -5,16 +5,16 @@ NAME=$1; shift
 CLASS=$1; shift
 VSUFFIX=$1; shift
 SS=$1; shift
-LOCALE_MAP=$1; shift
+# LOCALE_MAP is now optional
+LOCALE_MAP=$1
+[ -n "$LOCALE_MAP" ] && shift
 
-if test $# -eq 2
-then
-	MAIL_IM_HACK=$1; shift
-	NEWS_IM_HACK=$1; shift
-else
-	MAIL_IM_HACK=""
-	NEWS_IM_HACK=""
-fi
+# MAIL_IM_HACK and NEWS_IM_HACK are now optional
+MAIL_IM_HACK=$1
+[ -n "$MAIL_IM_HACK" ] && shift
+
+NEWS_IM_HACK=$1
+[ -n "$NEWS_IM_HACK" ] && shift
 
 PROGNAME="netscape"
 
@@ -51,4 +51,3 @@ cat resources ${LOCALE_MAP} strs | sed \
 	 s/@MAIL_IM_HACK@/${MAIL_IM_HACK}/g;
 	 s/@NEWS_IM_HACK@/${NEWS_IM_HACK}/g;
 	 s/@URLVERSION@/${VERS}/g" > ${DEST}
-

@@ -1,6 +1,6 @@
 /* -*- Mode:C; tab-width: 8 -*-
    dialogs.c --- Preference dialogs.
-   Copyright © 1998 Netscape Communications Corporation, all rights reserved.
+   Copyright ï¿½ 1998 Netscape Communications Corporation, all rights reserved.
    Created: Spence Murray <spence@netscape.com>, 30-Sep-95.
  */
 
@@ -9634,17 +9634,11 @@ fe_VerifyDiskCache (MWContext *context)
       if (mkdir (file, 0700))
 	{
 	  /* Failed. */
-#ifdef DEBUG_jwz  /* this is the modern way */
           char *error = 0;
           if (errno >= 0)
             error = strerror (errno);
           if (!error || !*error)
             error = XP_GetString( XFE_UNKNOWN_ERROR );
-#else /* !DEBUG_jwz */
-	  char *error = ((errno >= 0 && errno < sys_nerr)
-			 ? sys_errlist [errno]
-			 : XP_GetString( XFE_UNKNOWN_ERROR));
-#endif /* !DEBUG_jwz */
 	  PR_snprintf (message, sizeof (message),
 		    fe_globalData.create_cache_dir_message,
 		    file, error);

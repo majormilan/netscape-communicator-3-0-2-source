@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8 -*-
    icons.c --- icons and stuff
-   Copyright © 1997 Netscape Communications Corporation, all rights reserved.
+   Copyright ï¿½ 1997 Netscape Communications Corporation, all rights reserved.
    Created: Jamie Zawinski <jwz@netscape.com>, 19-Oct-94.
  */
 
@@ -3140,7 +3140,6 @@ FE_AboutData (const char *which,
 #		          include "../../l10n/us/xp/about.h"
 #	endif
 #endif
-                ;
               a = strdup (a);
 	    }
 	}
@@ -3171,7 +3170,6 @@ FE_AboutData (const char *which,
 #		          include "../../l10n/us/xp/splash.h"
 #	endif
 #endif
-                ;
               a = strdup (a);
 	    }
 	}
@@ -3183,7 +3181,6 @@ FE_AboutData (const char *which,
           /* jwz: stdup() is a macro on Red Hat 6.1 */
           a =
 #		      include "../../l10n/us/xp/authors2.h"
-            ;
           a = strdup (a);
 	}
 #if 0		/* Other FEs dont want to implement this :-( -dp */
@@ -3217,7 +3214,6 @@ FE_AboutData (const char *which,
           /* jwz: stdup() is a macro on Red Hat 6.1 */
           a =
 #		      include "../../l10n/us/xp/mozilla.h"
-            ;
           a = strdup (a);
 	}
       else if (!strcmp (which2,
@@ -3235,7 +3231,6 @@ FE_AboutData (const char *which,
           /* jwz: stdup() is a macro on Red Hat 6.1 */
           a =
 #		      include "../../l10n/us/xp/mail.h"
-            ;
           a = strdup (a);
      }
 	}
@@ -3262,7 +3257,6 @@ FE_AboutData (const char *which,
           /* jwz: stdup() is a macro on Red Hat 6.1 */
           a =
 #		          include "../../l10n/us/xp/aboutplg.h"
-            ;
           a = strdup (a);
 	    }
 	}
