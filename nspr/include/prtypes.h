@@ -124,7 +124,8 @@ typedef signed short int16;
 typedef unsigned int uint32;
 typedef signed int int32;
 #else
-typedef unsigned long uint32;
+/* typedef unsigned long uint32; */
+typedef unsigned int uint32;
 typedef signed long int32;
 #endif
 

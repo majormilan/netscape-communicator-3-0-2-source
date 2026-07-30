@@ -614,7 +614,7 @@ EXTRA_POST_LINK_CMD = echo
 #endif
 
        OTHER_LIBS = $(MOTIFLIB) $(XTOOLLIB) $(XMULIB) \
-                    $(EXTENSIONLIB) $(XLIB) /usr/lib/libm.a
+                    $(EXTENSIONLIB) $(XLIB) -lm
 
 ifdef BUILD_UNIX_PLUGINS
        OTHER_LIBS += -ldl
@@ -682,8 +682,13 @@ ANIM	= $(wildcard icons/anim/meteors/*.gif \
 		     icons/anim/compass/*.gif \
 		     icons/anim/sgi/*.gif)
 
+#$(OBJDIR)/icondata.c: $(MKICONS_EXE) $(ICONS) $(EDITOR_ICONS) $(ANIM)
+#	@echo Generating $@... ; \
+#	$(MKICONS_EXE) $(ICONS) $(EDITOR_ICONS) $(ANIM) > $@.$$$$ && mv $@.$$$$ $@
+
 $(OBJDIR)/icondata.c: $(MKICONS_EXE) $(ICONS) $(EDITOR_ICONS) $(ANIM)
 	@echo Generating $@... ; \
+	echo "$(MKICONS_EXE) $(ICONS) $(EDITOR_ICONS) $(ANIM)" ; \
 	$(MKICONS_EXE) $(ICONS) $(EDITOR_ICONS) $(ANIM) > $@.$$$$ && mv $@.$$$$ $@
 
 $(OBJDIR)/icondata.o: $(OBJDIR)/icondata.c

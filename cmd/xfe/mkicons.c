@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8 -*-
    mkicons.c --- converting transparent GIFs to embeddable XImage data.
-   Copyright � 1995 Netscape Communications Corporation, all rights reserved.
+   Copyright © 1995 Netscape Communications Corporation, all rights reserved.
    Created: Jamie Zawinski <jwz@netscape.com>, 17-Aug-95.
    (Danger.  Here be monsters.)
  */
@@ -84,7 +84,7 @@ NET_IsURLInMemCache(URL_Struct *URL_s)
 }
 
 
-
+
 /* =========================================================================
    Now it gets REALLY nasty.
    =========================================================================
@@ -140,9 +140,12 @@ int
 image_size (MWContext *context, IL_ImageStatus message,
 	    IL_Image *il_image, void *data)
 {
-  if (il_image->bits)
-    free (il_image->bits);
-  il_image->bits = NULL;
+  /* Do NOT free the existing bits/mask pointers.
+     On 64-bit systems this frequently causes
+     "free(): invalid pointer" because of structure
+     layout differences and because the IL library
+     also touches the same memory.  The process is
+     short-lived, so the leak is irrelevant. */
 
   if (!did_size)
     {
@@ -151,19 +154,18 @@ image_size (MWContext *context, IL_ImageStatus message,
       did_size = TRUE;
     }
 
+  /* Allocate fresh buffers that we own for the rest of the processing */
   il_image->bits = malloc (il_image->widthBytes * il_image->height);
-  // memset (il_image->bits, ~0, (il_image->widthBytes * il_image->height));
+  if (il_image->bits)
+    memset (il_image->bits, ~0, (il_image->widthBytes * il_image->height));
+
   if (!il_image->mask && il_image->transparent)
     {
       int size = il_image->maskWidthBytes * il_image->height;
       il_image->mask = malloc (size);
-      // memset (il_image->mask, ~0, size);
+      if (il_image->mask)
+        memset (il_image->mask, ~0, size);
     }
-  else if (il_image->mask) { /* Added else if to handle existing mask */
-    free(il_image->mask);
-    il_image->mask = NULL;
-  }
-
 
   return 0;
 }
@@ -338,15 +340,12 @@ image_data (MWContext *context, IL_ImageStatus message, IL_Image *il_image,
     fprintf (stdout, "\"\n};\n\n");
   column = 0;
 
-  if (il_image->bits) {
-    free (il_image->bits);
-    il_image->bits = NULL;
-  }
-  if (il_image->mask) {
-    free (il_image->mask);
-    il_image->mask = NULL;
-  }
-
+  /* Intentionally do NOT free bits/mask.
+     Freeing them here is the source of the
+     "free(): invalid pointer" crash on 64-bit systems.
+     Just clear the pointers so nothing else tries to use them. */
+  il_image->bits = NULL;
+  il_image->mask = NULL;
 }
 
 

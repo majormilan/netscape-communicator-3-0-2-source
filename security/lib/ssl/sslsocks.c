@@ -585,20 +585,31 @@ static int StartGather(SSLSocket *ss)
 /************************************************************************/
 
 
-/* BSDI ain't got no cuserid() */
-#ifdef __386BSD__
+/* cuserid() is obsolete / missing on modern systems.
+ * Provide a portable replacement that works everywhere.
+ */
+#ifdef XP_UNIX
 #include <pwd.h>
-char *bsdi_cuserid(char *b)
+#include <unistd.h>
+#include <string.h>
+
+#ifndef L_cuserid
+#define L_cuserid 9
+#endif
+
+static char *
+my_cuserid(char *buf)
 {
-    struct passwd *pw = getpwuid(getuid());
-
-    if (!b) return pw ? pw->pw_name : NULL;
-
+    struct passwd *pw = getpwuid(geteuid());
     if (!pw || !pw->pw_name)
-	b[0] = '\0';
-    else
-	strcpy(b, pw->pw_name);
-    return b;
+	return NULL;
+
+    if (buf) {
+	strncpy(buf, pw->pw_name, L_cuserid - 1);
+	buf[L_cuserid - 1] = '\0';
+	return buf;
+    }
+    return pw->pw_name;
 }
 #endif
 
@@ -650,11 +661,7 @@ int ssl_SocksConnect(SSLSocket *ss, const void *sa, int salen)
     if (!direct) {
 	/* Find user */
 #ifdef XP_UNIX
-#ifdef __386BSD__
-	user = bsdi_cuserid(0);
-#else
-	user = cuserid(0);
-#endif
+	user = my_cuserid(NULL);
 	if (!user) {
 	    PORT_SetError(XP_ERRNO_EINVAL);
 	    SSL_DBG(("%d: SSL[%d]: cuserid fails, errno=%d",
@@ -761,11 +768,7 @@ int ssl_SocksBind(SSLSocket *ss, const void *sa, int salen)
 
 	/* Find user */
 #ifdef XP_UNIX
-#ifdef __386BSD__
-	user = bsdi_cuserid(0);
-#else
-	user = cuserid(0);
-#endif
+	user = my_cuserid(NULL);
 	if (!user) {
 	    SSL_DBG(("%d: SSL[%d]: cuserid fails, errno=%d",
 		     SSL_GETPID(), ss->fd, PORT_GetError()));
@@ -849,12 +852,8 @@ SSL_BindForSockd(int s, const void *sa, int salen, long dsthost)
 
         /* Find user */
 #ifdef XP_UNIX
-#ifdef __386BSD__
-        user = bsdi_cuserid(0);
-#else
-        user = cuserid(0);
-#endif
-        if (!user) {
+	user = my_cuserid(NULL);
+	if (!user) {
 	    SSL_DBG(("%d: SSL[%d]: cuserid fails, errno=%d",
 		     SSL_GETPID(), ss->fd, PORT_GetError()));
 	    PORT_SetError(XP_ERRNO_EINVAL);
