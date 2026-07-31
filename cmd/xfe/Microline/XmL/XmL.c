@@ -533,6 +533,7 @@ Boolean useAverageWidth;
 	XmFontContext context;
 	XFontStruct *fs;
 	short w, h;
+#if XmVersion < 2000
 	/* --- begin code to work around Motif internal bug */
 	typedef struct {
 		XmFontList nextFontList;
@@ -544,6 +545,7 @@ Boolean useAverageWidth;
 	} XmFontListRec;
 	XmFontList nextFontList;
 	/* --- end Motif workaround code */
+#endif /* XmVersion < 2000 */
 
 	*width = 0;
 	*height = 0;
@@ -551,14 +553,27 @@ Boolean useAverageWidth;
 		{
 		while (1)
 			{
+#if XmVersion < 2000
 			/* --- begin code to work around Motif internal bug */
 			/* --- this code can be removed for Motif 2.0    */
+			/* NB: XmFontContext/XmFontList are opaque, private
+			   Motif types.  This peeks at their Motif-1.x-era
+			   internal layout to work around a bug where
+			   XmFontListGetNextFont() failed to terminate.  On
+			   Motif 2.x these types have a completely different
+			   (rendition-based) internal layout, so poking at
+			   them this way reads garbage and crashes; the
+			   comment above already says this hack can be
+			   removed for Motif 2.0, so it's disabled there and
+			   we rely on XmFontListGetNextFont()'s own (fixed)
+			   termination behavior instead. */
 			nextFontList = ((XmFontListContextRec *)context)->nextFontList;
 			if (!nextFontList)
 				break;
 			if (!((XmFontListRec *)nextFontList)->font)
 				break;
 			/* --- end Motif workaround code */
+#endif /* XmVersion < 2000 */
 			if (XmFontListGetNextFont(context, &charset, &fs) == False)
 				break;
 			XtFree(charset);

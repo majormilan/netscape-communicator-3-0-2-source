@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8 -*-
    scroller.c --- defines a subclass of XmScrolledWindow
-   Copyright © 1994 Netscape Communications Corporation, all rights reserved.
+   Copyright ï¿½ 1994 Netscape Communications Corporation, all rights reserved.
    Created: Jamie Zawinski <jwz@netscape.com>, 23-Jul-94.
  */
 
@@ -9,6 +9,7 @@
 
 #include "scroller.h"
 #include <Xm/ScrolledWP.h>
+#include <Xm/BaseClassP.h>
 
 typedef struct
 {
