@@ -94,9 +94,51 @@
 #  define _JB_CONSTANTS_DEFINED 1
 #endif
 
-/* NSPR accessors – now 100% safe */
-#define PR_GetSP(_t)   (_t)->context[0].__jmpbuf[JB_SP]
-#define PR_GetPC(_t)   (_t)->context[0].__jmpbuf[JB_PC]
+/*
+ * Since glibc 2.4, setjmp()/sigsetjmp() do not store raw SP/BP/PC values
+ * into __jmpbuf: they XOR them with a per-process "pointer guard" cookie
+ * (kept at %fs:0x30 in the TCB on x86_64) and rotate the result left by
+ * 17 bits ("pointer mangling", meant to make stack-smashing attacks that
+ * overwrite a jmp_buf harder). longjmp()/siglongjmp() always undo this
+ * transform on the way out.
+ *
+ * _MD_INIT_CONTEXT below builds a jmp_buf by hand (there is no real
+ * setjmp() call to prime it, since the thread hasn't run yet), and
+ * PR_GetSP()/PR_GetPC() read the SP/PC back out of a jmp_buf for the
+ * conservative GC (prgcapi.c). Both must apply the same mangling glibc
+ * uses, or siglongjmp() restores garbage and crashes (this was the
+ * cause of a SIGSEGV inside __longjmp() / _PR_Schedule() when starting
+ * the very first NSPR thread). Verified empirically against this
+ * system's glibc by comparing real sigsetjmp() output for known
+ * SP/BP/PC values.
+ */
+#if defined(__x86_64__)
+static __inline__ long int
+_nspr_ptr_mangle(long int val)
+{
+    unsigned long int guard, v = (unsigned long int) val;
+    __asm__ __volatile__ ("mov %%fs:0x30, %0" : "=r" (guard));
+    v ^= guard;
+    return (long int) ((v << 17) | (v >> (64 - 17)));
+}
+static __inline__ long int
+_nspr_ptr_demangle(long int val)
+{
+    unsigned long int guard, v = (unsigned long int) val;
+    __asm__ __volatile__ ("mov %%fs:0x30, %0" : "=r" (guard));
+    v = (v >> 17) | (v << (64 - 17));
+    return (long int) (v ^ guard);
+}
+#else
+#  warning "NSPR SW_THREADS: jmp_buf pointer-mangling not implemented for this architecture; hand-built thread contexts may crash on glibc versions that mangle jmp_buf pointers"
+#  define _nspr_ptr_mangle(v)   ((long int)(v))
+#  define _nspr_ptr_demangle(v) ((long int)(v))
+#endif
+
+/* NSPR accessors – demangle the raw jmp_buf slots back into real
+   pointers before returning them. */
+#define PR_GetSP(_t)   _nspr_ptr_demangle((_t)->context[0].__jmpbuf[JB_SP])
+#define PR_GetPC(_t)   _nspr_ptr_demangle((_t)->context[0].__jmpbuf[JB_PC])
 
 #define PR_NUM_GCREGS  6
 #define PR_CONTEXT_TYPE sigjmp_buf
@@ -107,13 +149,29 @@
 */
 #define _MD_INIT_CONTEXT(_thread, e, o, a) \
 { \
+    unsigned long int _nspr_init_sp = (unsigned long int) \
+        (unsigned char*) ((_thread)->stack->stackTop - 64); \
+    /* \
+     * siglongjmp() jumps directly to JB_PC with the CPU registers set \
+     * from JB_SP/JB_BP -- it does not execute a "call" instruction, so \
+     * no return address gets pushed. But HopToadNoArgs() is ordinary \
+     * C code compiled assuming the x86_64 SysV ABI invariant that, on \
+     * entry to any function reached via "call", %rsp % 16 == 8 (the \
+     * call's implicit push of the 8-byte return address is what knocks \
+     * a 16-aligned pre-call %rsp down to 8-aligned). Handing it a \
+     * 16-aligned %rsp instead breaks that invariant one level in, and \
+     * SSE (movaps) stores/loads on 16-byte-aligned stack locals further \
+     * down the call chain fault with SIGSEGV. Align down to 16 and then \
+     * subtract 8 so the manufactured context looks exactly like a real \
+     * call site would. \
+     */ \
     (_thread)->asyncCall = e; \
     (_thread)->asyncArg0 = o; \
     (_thread)->asyncArg1 = a; \
-    (_thread)->context[0].__jmpbuf[JB_BP] = 0; \
-    (_thread)->context[0].__jmpbuf[JB_SP] = (long int)(unsigned char*) \
-        ((_thread)->stack->stackTop - 64); \
-    (_thread)->context[0].__jmpbuf[JB_PC] = (long int)HopToadNoArgs; \
+    (_thread)->context[0].__jmpbuf[JB_BP] = _nspr_ptr_mangle(0); \
+    (_thread)->context[0].__jmpbuf[JB_SP] = _nspr_ptr_mangle((long int) \
+        ((_nspr_init_sp & ~(unsigned long int)0xF) - 8)); \
+    (_thread)->context[0].__jmpbuf[JB_PC] = _nspr_ptr_mangle((long int)HopToadNoArgs); \
 }
 
 #define _MD_SWITCH_CONTEXT(_thread) \
