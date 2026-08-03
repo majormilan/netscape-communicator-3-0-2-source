@@ -3140,7 +3140,11 @@ FE_AboutData (const char *which,
 #		          include "../../l10n/us/xp/about.h"
 #	endif
 #endif
-              a = strdup (a);
+              /* This localized l10n/us/xp/*.h content is proprietary
+                 and is stripped (empty) in this open-source release,
+                 so `a` may be NULL here; guard strdup() against that
+                 instead of crashing. */
+              a = strdup (a ? a : "");
 	    }
 	}
       else if (!strcmp (which2, "\270\265\261\246\270\255"))	/* "splash" */
@@ -3170,7 +3174,9 @@ FE_AboutData (const char *which,
 #		          include "../../l10n/us/xp/splash.h"
 #	endif
 #endif
-              a = strdup (a);
+              /* See note above: proprietary l10n content may be empty
+                 (stripped) in this release; guard against NULL `a`. */
+              a = strdup (a ? a : "");
 	    }
 	}
       else if (!strcmp (which2, "\166\176\176\171")) /* "1994" */
@@ -3181,7 +3187,9 @@ FE_AboutData (const char *which,
           /* jwz: stdup() is a macro on Red Hat 6.1 */
           a =
 #		      include "../../l10n/us/xp/authors2.h"
-          a = strdup (a);
+          /* See note above: proprietary l10n content may be empty
+             (stripped) in this release; guard against NULL `a`. */
+          a = strdup (a ? a : "");
 	}
 #if 0		/* Other FEs dont want to implement this :-( -dp */
       else if (!strcmp (which2, "\166\176\176\172")) /* "1995" */
@@ -3214,7 +3222,9 @@ FE_AboutData (const char *which,
           /* jwz: stdup() is a macro on Red Hat 6.1 */
           a =
 #		      include "../../l10n/us/xp/mozilla.h"
-          a = strdup (a);
+          /* See note above: proprietary l10n content may be empty
+             (stripped) in this release; guard against NULL `a`. */
+          a = strdup (a ? a : "");
 	}
       else if (!strcmp (which2,
 			"\262\246\256\261\256\263\271\267\264"))/*"mailintro"*/
@@ -3231,7 +3241,9 @@ FE_AboutData (const char *which,
           /* jwz: stdup() is a macro on Red Hat 6.1 */
           a =
 #		      include "../../l10n/us/xp/mail.h"
-          a = strdup (a);
+          /* See note above: proprietary l10n content may be empty
+             (stripped) in this release; guard against NULL `a`. */
+          a = strdup (a ? a : "");
      }
 	}
 
@@ -3257,7 +3269,9 @@ FE_AboutData (const char *which,
           /* jwz: stdup() is a macro on Red Hat 6.1 */
           a =
 #		          include "../../l10n/us/xp/aboutplg.h"
-          a = strdup (a);
+          /* See note above: proprietary l10n content may be empty
+             (stripped) in this release; guard against NULL `a`. */
+          a = strdup (a ? a : "");
 	    }
 	}
 

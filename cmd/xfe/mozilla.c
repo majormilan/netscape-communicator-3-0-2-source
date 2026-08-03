@@ -546,6 +546,18 @@ static void  fe_EventForRNG (XEvent *event);
  */
 static XEvent fe_last_event;
 
+/*
+ * fe_EventLoop()'s DEBUG-only sanity check below (XP_ASSERT(spinning_wildly
+ * < 3)) is explicitly documented by its own authors as a heuristic for
+ * "busted Xt libraries" that can spuriously report XtAppPending() == 0
+ * a few times in a row before delivering the first event, and the code
+ * already provides I_KNOW_MY_Xt_IS_BAD as the sanctioned way to disable
+ * it once that's been observed. On today's Xt/X11 stack (running atop a
+ * completely different, much lower-latency X server/Xt implementation
+ * than anything available in 1996) this trips very early during
+ * startup and aborts the whole browser, so define the escape hatch here.
+ */
+#define I_KNOW_MY_Xt_IS_BAD
 
 /* Process events. The idea here is to give X events priority over
    file descriptor input so that the user gets better interactive

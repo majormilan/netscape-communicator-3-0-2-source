@@ -3634,7 +3634,18 @@ char*
 fe_ResourceString(Widget widget, char* res_name, char* res_class)
 {
     XtResource resource;
-    XmString   result = 0;
+    /*
+     * resource.resource_type is XmRString, whose resource converter
+     * produces a plain NUL-terminated C string (char*), not an opaque
+     * XmString compound string. Older Motif's XmStringGetLtoR() was
+     * apparently tolerant of being handed this raw buffer instead of a
+     * real compound string, but current OpenMotif validates the
+     * compound-string header and crashes on the garbage tag/length
+     * bytes it finds at the start of a plain string. Fetch it as the
+     * char* it actually is instead of running it through the
+     * XmString-only decoding path.
+     */
+    char *result = 0;
 
     resource.resource_name = res_name;
     resource.resource_class = res_class;
@@ -3648,10 +3659,7 @@ fe_ResourceString(Widget widget, char* res_name, char* res_class)
 		      XtClassName(widget), &resource, 1, NULL, 0);
     
     if (result) {
-        char *text;
-        XmStringGetLtoR(result, XmFONTLIST_DEFAULT_TAG, &text);
-        XmStringFree(result);
-        return text;
+        return XtNewString(result);
     }
     return NULL;
 }
